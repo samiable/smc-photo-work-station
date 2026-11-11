@@ -1,0 +1,44 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Get the files
+        uses: actions/checkout@v4
+
+      - name: Show the files
+        run: ls -la
+
+      - name: Prepare Android project
+        run: python3 make_android_project.py
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android tools
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5
+
+      - name: Build APK
+        run: gradle -p android_build assembleDebug --no-daemon --stacktrace --console=plain
+
+      - name: Save the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SMC-Photo-Work-Station-APK
+          path: android_build/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
