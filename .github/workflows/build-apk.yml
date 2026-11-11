@@ -20,16 +20,25 @@ jobs:
         run: python3 make_android_project.py
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Android tools
-        uses: android-actions/setup-android@v3
+      - name: Set up Android SDK
+        run: |
+          echo "ANDROID_HOME is $ANDROID_HOME"
+          mkdir -p "$ANDROID_HOME/licenses" || true
+          printf '\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n' > "$ANDROID_HOME/licenses/android-sdk-license" || true
+          printf '\nd56f5187479451eabf01fb78af6dfcb131a6481e\n' >> "$ANDROID_HOME/licenses/android-sdk-license" || true
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKM" ]; then
+            yes | "$SDKM" --licenses > /dev/null || true
+            "$SDKM" "platforms;android-34" "build-tools;34.0.0" || true
+          fi
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.5
 
