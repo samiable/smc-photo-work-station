@@ -1,0 +1,1 @@
+# smc-photo-work-station
